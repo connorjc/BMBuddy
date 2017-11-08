@@ -1,0 +1,52 @@
+{% extends "bootstrap/base.html" %}
+
+{% block html_attribs %} lang="en"{% endblock %}
+
+{% block title %}BMBuddy{% endblock %}
+
+{% block navbar %}
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" 
+            data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+        <a class="navbar-brand">BMBuddy</a>
+      </div>
+      <div id="myNavbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="#">Shopping List</a></li>
+          <li><a href="#">Wish List</a></li>
+          <li><a href="#">Purchased</a></li>
+        </ul>
+        
+         <form class="navbar-form navbar-left" action="/search" method="post">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search Barcode" name="upc">
+            <div class="input-group-btn">
+              <button class="btn btn-default" type="submit">
+                <i class="glyphicon glyphicon-search"></i>
+              </button>
+            </div>
+          </div>
+        </form> 
+
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>
+            Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <div class="alert alert-danger">
+    <strong>Reported Allergies</strong>
+  </div>
+  <h1>Welcome to BMBuddy!</h1>
+   <h2> {{ house }} house ${{ budget }}</h2>
+{% endblock %}
