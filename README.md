@@ -27,7 +27,7 @@ source bin/activate
 ```
 
 Clone the repository and enter the repo
-```
+```sh
 git clone https://github.com/connorjc/bmbuddy.git
 cd BMBuddy
 ```
@@ -53,4 +53,4 @@ or
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
