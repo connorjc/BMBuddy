@@ -1,16 +1,19 @@
 # BMBuddy
-A web-based tool to help the Business Managers (BM) of the Southern
-Scholarship Foundation (SSF) better effectively buy groceries on a budget for
+A web-based tool to help the Business Managers (BM) of the [Southern
+Scholarship Foundation][] (SSF) better effectively buy groceries on a budget for
 all of the residents. BMBuddy will help track shopping the running total of 
 groceries, a live shopping list, as well as a wish list for the other residents
 to suggest food items.
 
+[Southern Scholarship Foundation]: https://www.southernscholarship.org/
 ## Getting Started
 
 ### Prerequisites
 
 Python3
+
 virtualenv
+
 MySQL
 
 ### Installing
