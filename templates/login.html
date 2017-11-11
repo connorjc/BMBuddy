@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="center-block" style="width:75%">
+  <p style="font-stize=20px">Login</p>
+  <form id="login-form" class="text-center">
+    <div class="login-group">
+      <div class="form-group">
+        <input type="text" class="form-control" id="lg_username" name="lg_username" placeholder="username">
+      </div>
+      <div class="form-group">
+        <input type="password" class="form-control" id="lg_password" name="lg_password" placeholder="password">
+      </div>
+    </div>
+    {% if error %}
+      <p style="color: red;"><strong>Error:</strong> {{ error }}</p>
+    {% endif %}
+    <button action="" formmethod="post" class="btn btn-primary btn-sm">Login</button>
+  </form>
+</div>
+
+
+
+{% endblock %}

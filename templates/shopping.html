@@ -1,0 +1,31 @@
+{% extends "home.html" %}
+
+{% block content %}
+<h2>Shopping List</h2>
+<div class="table-responsive">          
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Store</th>
+        <th>Name</th>
+        <th>Brand</th>
+        <th>UPC</th>
+        <th>Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in items %}
+        <tr>
+          <td>{{items[row][0]}}</td>
+          <td>{{items[row][1]}}</td>
+          <td>{{items[row][2]}}</td>
+          <td>{{row}}</td>
+          <td>{{items[row][3]}}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h2>Running Total: $###</h2>
+  </div>
+</div>
+{% endblock %}
