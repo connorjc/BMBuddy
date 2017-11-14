@@ -28,86 +28,90 @@ def check_hex(num):
 
 @app.route('/search', methods = ['POST'])
 def search():
-  upc = request.form['upc']
-  store = request.form['store']
-  if store == "Walmart":
+    upc = request.form['upc']
+    store = request.form['store']
+    #if store == "walmart":
     try:
-      brandName, salePrice, name, msrp = walmart.callAPI(upc)
-      budget = name
+        brandName, salePrice, name, msrp = walmart.callAPI(upc)
+        if salePrice == None and msrp != None:
+            salePrice = msrp
     except TypeError:
-      budget = "UPC Not Found"
-  else:
-    brandName, name = buycott.scrape(upc)
-    unicodeObj = re.findall(r"&#[xa-fA-F0-9]*?;", brandName)
-    value = brandName
-    for uni in unicodeObj:
-      value = re.sub(uni, chr(check_hex(uni)), brandName)
-    brandName = value
+        name = "Name Not Found"
+        brandName = None
+        salePrice = None
+    return render_template("search.html", name = name, brand = brandName, upc = upc, \
+        store = store, price = salePrice)
+    '''
+    else:
+        brandName, name = buycott.scrape(upc)
+        unicodeObj = re.findall(r"&#[xa-fA-F0-9]*?;", brandName)
+        value = brandName
+        for uni in unicodeObj:
+            value = re.sub(uni, chr(check_hex(uni)), brandName)
+        brandName = value
 
-    value = name
-    unicodeObj = re.findall(r"&#[xa-fA-F0-9]*?;", name)
-    for uni in unicodeObj:
-      value = re.sub(uni, chr(check_hex(uni)), name)
-      name = value
-        
-    budget = name
-  return render_template("search.html", product_name = name)
-
+        value = name
+        unicodeObj = re.findall(r"&#[xa-fA-F0-9]*?;", name)
+        for uni in unicodeObj:
+            value = re.sub(uni, chr(check_hex(uni)), name)
+            name = value
+        return render_template("search.html", name = name, brand = brandName, upc = upc)
+    '''
 @app.route('/')
 def index():
-  return render_template("index.html")
+    return render_template("index.html")
 
 @app.route('/home')
 def homepage():
-  if 'user_data' in session:
-    user = session['user_data']
-    
+    if 'user_data' in session:
+        user = session['user_data']
+        cur = db_connect.cursor()
+        cur.execute("SELECT Name, Budget FROM House WHERE HM=\"" + user[2] + "\" OR BM1=\"" + user[2] + "\" OR BM2=\"" + user[2] + "\";")
+        house = cur.fetchone()
+        cur.close()
+        return render_template("home.html", name = user[0], house = house[0], budget = house[1])
+    else:
+        return redirect(url_for('.index'))
+
+@app.route('/shopping')
+def shopping_list():
+    pass
+    '''
+    HOUSE_SHOPPING_LIST_ID = 0 #TODO: edit to be dynamic; ex. ECA has 0
     cur = db_connect.cursor()
-
-    cur.execute("SELECT Name, Budget FROM House WHERE HM=\"" + user[2] + "\" OR BM1=\"" + user[2] + "\" OR BM2=\"" + user[2] + "\";")
-
-    house = cur.fetchone()
-
+    
+    cur.execute("SELECT Store, Name, Quantity, Price \
+        FROM `Shopping List`, Item \
+        WHERE ID = " + str(HOUSE_SHOPPING_LIST_ID) + "AND UPC = Item")
+    items = cur.fetchall()
     cur.close()
-
-    return render_template("home.html", name = user[0], house = house[0], budget = house[1])
-  else:
-    return redirect(url_for('.index'))
-
+    total = 0
+    for row in items:
+        total += row[2]*row[3]
+    return render_template("shopping.html", items = items, total = total)
+    '''
 @app.route('/login', methods = ['POST','GET'])
 def login():
-  if request.method == 'GET':
-    return render_template("login.html")
-  elif request.method == 'POST':
-    
-    cur = db_connect.cursor()
-
-    cur.execute("SELECT * FROM Admin WHERE Username=\"" +
-        request.form['lg_username'] + "\" AND Password=\"" +
-        request.form['lg_password'] + "\";");
-    
-    user_data = cur.fetchone()
-
-    cur.close()
-
+    if request.method == 'GET':
+        return render_template("login.html")
+    elif request.method == 'POST':
+        cur = db_connect.cursor()
+        cur.execute("SELECT * FROM Admin WHERE Username=\"" +
+            request.form['lg_username'] + "\" AND Password=\"" +
+            request.form['lg_password'] + "\";");
+        user_data = cur.fetchone()
+        cur.close()
     if user_data:
-      session['user_data'] = user_data
-      return redirect(url_for('.homepage'))
+        session['user_data'] = user_data
+        return redirect(url_for('.homepage'))
     else:
-      return render_template("login.html", error = "Invalid username/password. Please try again.")
+        return render_template("login.html", error = "Invalid username/password. Please try again.")
 
 @app.route('/logout')
 def logout():
-  if 'user_data' in session:
-    session.pop('user_data',None)
-  return redirect(url_for('.index'))
+    if 'user_data' in session:
+        session.pop('user_data',None)
+        return redirect(url_for('.index'))
 
 if __name__ == "__main__":
-    '''
-        port >= 1024 allows for non-root execution
-        ssl is required for https
-            * fix persmissions for ssl_context
-            * or remove bmbuddy.ddns.net from letsencryt
-    '''
     app.run('0.0.0.0', 2222)
-#ssl_context=("/etc/letsencrypt/live/bmbuddy.ddns.net/fullchain.pem","/etc/letsencrypt/live/bmbuddy.ddns.net/privkey.pem"))
