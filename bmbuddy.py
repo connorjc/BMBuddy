@@ -57,36 +57,50 @@ def search():
             name = value
         return render_template("search.html", name = name, brand = brandName, upc = upc)
     '''
+'''
 @app.route('/')
 def index():
     return render_template("index.html")
-
-@app.route('/home')
+'''
+@app.route('/')
 def homepage():
     if 'user_data' in session:
         user = session['user_data']
         cur = db_connect.cursor()
-        cur.execute("SELECT Name, Budget FROM House WHERE HM=\"" + user[2] + "\" OR BM1=\"" + user[2] + "\" OR BM2=\"" + user[2] + "\";")
+        cur.execute("SELECT Name, Budget \
+            FROM House \
+            WHERE HM=\"" + user[1] + "\" \
+            OR BM1=\"" + user[1] + "\" \
+            OR BM2=\"" + user[1] + "\"")
         house = cur.fetchone()
         cur.close()
         return render_template("home.html", name = user[0], house = house[0], budget = house[1])
     else:
-        return redirect(url_for('.index'))
+        return render_template("index.html")
+        #return redirect(url_for('.index'))
 
 @app.route('/shopping')
 def shopping_list():
-    HOUSE_SHOPPING_LIST_ID = 0 #TODO: edit to be dynamic; ex. ECA has 0
-    cur = db_connect.cursor()
-    
-    cur.execute("SELECT Store, Name, Quantity, Price \
-        FROM `Shopping List`, Item \
-        WHERE ID = " + str(HOUSE_SHOPPING_LIST_ID) + " AND UPC = Item")
-    items = cur.fetchall()
-    cur.close()
-    total = 0
-    for row in items:
-        total += row[2]*row[3]
-    return render_template("shopping.html", items = items, total = total)
+    if 'user_data' in session:
+        user = session['user_data']
+        cur = db_connect.cursor()
+        cur.execute("SELECT Store, Name, Quantity, Price \
+            FROM `Shopping List`, Item \
+            WHERE ID = (\
+                SELECT `Shopping List` \
+                FROM House \
+                WHERE HM=\"" + user[1] + "\" \
+                OR BM1=\"" + user[1] + "\" \
+                OR BM2=\"" + user[1] + "\" \
+            ) AND UPC = Item")
+        items = cur.fetchall()
+        cur.close()
+        total = 0
+        for row in items:
+            total += row[2]*row[3]
+        return render_template("shopping.html", items = items, total = total)
+    else:
+        return render_template("login.html")
     
 @app.route('/login', methods = ['POST','GET'])
 def login():
@@ -94,7 +108,7 @@ def login():
         return render_template("login.html")
     elif request.method == 'POST':
         cur = db_connect.cursor()
-        cur.execute("SELECT * FROM Admin WHERE Username=\"" +
+        cur.execute("SELECT Name, Username FROM Admin WHERE Username=\"" +
             request.form['lg_username'] + "\" AND Password=\"" +
             request.form['lg_password'] + "\";");
         user_data = cur.fetchone()
@@ -109,7 +123,8 @@ def login():
 def logout():
     if 'user_data' in session:
         session.pop('user_data',None)
-        return redirect(url_for('.index'))
+        return render_template("index.html")
+        #return redirect(url_for('.index'))
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 2222)
