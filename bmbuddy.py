@@ -75,21 +75,19 @@ def homepage():
 
 @app.route('/shopping')
 def shopping_list():
-    pass
-    '''
     HOUSE_SHOPPING_LIST_ID = 0 #TODO: edit to be dynamic; ex. ECA has 0
     cur = db_connect.cursor()
     
     cur.execute("SELECT Store, Name, Quantity, Price \
         FROM `Shopping List`, Item \
-        WHERE ID = " + str(HOUSE_SHOPPING_LIST_ID) + "AND UPC = Item")
+        WHERE ID = " + str(HOUSE_SHOPPING_LIST_ID) + " AND UPC = Item")
     items = cur.fetchall()
     cur.close()
     total = 0
     for row in items:
         total += row[2]*row[3]
     return render_template("shopping.html", items = items, total = total)
-    '''
+    
 @app.route('/login', methods = ['POST','GET'])
 def login():
     if request.method == 'GET':
