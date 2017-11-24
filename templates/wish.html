@@ -1,34 +1,31 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
-<div id="search-warning" class="alert alert-danger" hidden>
-  <strong>Invalid search parameter</strong>
-</div>
-
-<h2>Search Results</h2>
+<h2>Wish List</h2>
 <div class="table-responsive">          
   <table class="table">
     <thead>
       <tr>
-        <th>Brand</th>
+        <th>Votes</th>
+        <th>Store</th>
         <th>Name</th>
-        <th>UPC</th>
-        <th>Walmart Price</th>
-        <th>Costco Price</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Remove</th>
       </tr>
-    </thead>
+    </thead><!--
     <tbody>
       {% for row in items %}
         <tr>
           <td>{{row[0]}}</td>
-          <td>{{row[3]}}</td>
-          <td>{{row[4]}}</td>
           <td>{{row[1]}}</td>
           <td>{{row[2]}}</td>
+          <td>${{row[3]}}</td>
+          <td><button><span class="glyphicon glyphicon-trash text-danger"></span></button></td>
         </tr>
       {% endfor %}
-    </tbody>
+    </tbody>-->
   </table>
+  </div>
 </div>
 {% endblock %}

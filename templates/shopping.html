@@ -1,6 +1,11 @@
 {% extends "layout.html" %}
 
 {% block content %}
+
+<div id="search-warning" class="alert alert-danger" hidden>
+  <strong>Invalid search parameter</strong>
+</div>
+
 <h2>Shopping List</h2>
 <div class="table-responsive">          
   <table class="table">
@@ -10,22 +15,42 @@
         <th>Name</th>
         <th>Quantity</th>
         <th>Price</th>
-        <th>Remove</th>
+        <th>Subtotal</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       {% for row in items %}
         <tr>
-          <td>{{row[0]}}</td>
-          <td>{{row[1]}}</td>
-          <td>{{row[2]}}</td>
-          <td>${{row[3]}}</td>
-          <td><button><span class="glyphicon glyphicon-trash text-danger"></span></button></td>
+          <td id="row-store">{{row[0]}}</td>
+          <td id="row-name" data-upc={{row[5]}}>{{row[1]}}</td>
+          <td class="col-xs-1"><input type="number" class="row-quantity form-control text-center" value={{row[2]}} min="0"></td>
+          {% if row[0] == 'Walmart' and row[3] != None %}
+          <td>$<span id="row-price">{{ '%0.2f' % row[3] }}</span></td>
+          <td>$<span class="row-subtotal">{{ '%0.2f' % (row[2] * row[3]) }}</span></td>
+          {% elif row[4] != None %}
+          <td>$<span id="row-price">{{ row[4]|round(2) }}</span></td>
+          <td>$<span class="row-subtotal">{{ '%0.2f' % (row[2] * row[4]) }}</span></td>
+          {% else %}
+          <td>Unkown</td>
+          <td>$0.00</td>
+          {% endif %}
+          <td>
+            <button id="shop-list-refresh"><i class="glyphicon glyphicon-refresh text-success"></i></button>
+            <button id="shop-list-remove"`><i class="glyphicon glyphicon-trash text-danger"></i></button>
+          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
   </div>
-  <h2>Running Total: <span class="text-success">${{total}}</span></h2>
+  <button>Import Wishlist</button>
+  <button>Checkout</button>
+  {% if total < budget %}
+    <h2>Total: <span class="text-success">$<span id="shopping-total">{{ '%0.2f' % total }}</span></span></h2>
+  {% endif %}
+  {% if total > budget %}
+    <h2>Total: <span class="text-danger">$<span id="shopping-total">{{ '%0.2f' % total }}</span></span></h2>
+  {% endif %}
 </div>
 {% endblock %}

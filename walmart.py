@@ -11,7 +11,7 @@ import pymysql
 
 dotenv.load_dotenv('.env')
 url = os.getenv('APIKEY')
-db_connect = pymysql.connect(host=os.getenv('HOST'), port=3306, user='bmbuddy', passwd='clars', db=os.getenv('DB') )
+db_connect = pymysql.connect(host=os.getenv('HOST'), port=3306, user=os.getenv('USER'), passwd=os.getenv('PASSWORD'), db=os.getenv('DB') )
 
 def callAPI(upc):
   new_url = url + upc
@@ -28,11 +28,7 @@ def callAPI(upc):
       brandName = str(info['items'][0]['brandName'])
     else:
       brandName = None
-    if 'msrp' in info['items'][0]:
-      msrp = str(info['items'][0]['msrp'])
-    else:
-      msrp = None
-    return brandName, salePrice, name, msrp
+    return brandName, salePrice, name
   else:
     return None
 
@@ -51,10 +47,12 @@ if __name__ == "__main__":
         result = callAPI(upc)
         if result:
           print(result)
-          print("Name: " + result[0])
-          print("SalePrice: " + result[1])
-          print("MSRP: " + result[2])
-          print("Size: " + result[3])
+          if result[0]:
+            print("Brand: " + result[0])
+          if result[1]:
+            print("SalePrice: " + result[1])
+          if result[2]:
+            print("Name: " + result[2])
         else:
           print("UPC Information Not Found")
         upc = input("Enter UPC (-1 to quit): ")
@@ -81,8 +79,6 @@ if __name__ == "__main__":
             query = 'INSERT INTO Item (Brand, Price, Name, UPC, Store_Name) VALUES (\"' + str(info[0]) + '\",\"'
             if info[1]:
               query += info[1]
-            elif info[3]:
-              query += info[3]
             else:
               query += '0.00'
             query += '\",\"' + str(info[2]) + '\",\"' + line.rstrip() + '\",\"Walmart\");'
