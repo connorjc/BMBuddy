@@ -53,6 +53,7 @@ or
 
 * **Connor Christian** - [connorjc](https://github.com/connorjc)
 * **Ronald Franco** - [Francoded](https://github.com/Francoded)
+* **Biing-Jiun Charles** - [BeejCoding](https://github.com/BeejCoding)
 
 ## License
 
