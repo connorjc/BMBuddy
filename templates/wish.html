@@ -7,24 +7,29 @@
     <thead>
       <tr>
         <th>Votes</th>
-        <th>Store</th>
         <th>Name</th>
-        <th>Quantity</th>
         <th>Price</th>
-        <th>Remove</th>
+        <th>Actions</th>
       </tr>
-    </thead><!--
+    </thead>
     <tbody>
       {% for row in items %}
         <tr>
-          <td>{{row[0]}}</td>
+          <td>
+            <button id="wish-list-votedown"><span class="glyphicon glyphicon-thumbs-down text-danger"></span></button>
+            {{row[0]}}
+            <button id="wish-list-voteup"><span class="glyphicon glyphicon-thumbs-up text-success"></span></button>
+          </td>
           <td>{{row[1]}}</td>
-          <td>{{row[2]}}</td>
-          <td>${{row[3]}}</td>
-          <td><button><span class="glyphicon glyphicon-trash text-danger"></span></button></td>
+          <td>$19.95</td>
+          <td>
+            <button id="wish-list-refresh"><i class="glyphicon glyphicon-refresh text-success"></i></button>
+            <button id="wish-list-check"><i class="glyphicon glyphicon-user text-info"></i></button>
+            <button id="wish-list-remove"`><i class="glyphicon glyphicon-trash text-danger"></i></button>
+          </td>
         </tr>
       {% endfor %}
-    </tbody>-->
+    </tbody>
   </table>
   </div>
 </div>

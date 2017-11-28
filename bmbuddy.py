@@ -169,8 +169,20 @@ def add_shopping():
 def wish_list():
   if 'user_data' in session:
     user = session['user_data']
+    cur = db_connect.cursor()
+    cur.execute("SELECT Votes, Name \
+        FROM `Wish List`, Item \
+        WHERE ID = (\
+            SELECT `Wish List` \
+            FROM House \
+            WHERE HM=\"" + user[1] + "\" \
+            OR BM1=\"" + user[1] + "\" \
+            OR BM2=\"" + user[1] + "\" \
+        ) AND Item.UPC = `Wish List`.UPC")
+    items = cur.fetchall()
+    cur.close()
 
-    return render_template("wish.html")#, items = items, total = total)
+    return render_template("wish.html", items = items)
   else:
     return redirect(url_for('.login'))
 
