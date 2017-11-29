@@ -59,7 +59,7 @@ def search():
     print(results)
     brandName, walmartPrice, costcoPrice, name, upc = results[0]
 
-    image = None; 
+    image = None;
 
     for file in os.listdir('static/product_images'):
       if fnmatch.fnmatch(file, upc + '.*'):
@@ -113,13 +113,13 @@ def update_shopping():
       FROM House\
       WHERE HM = \"" + user[1] + "\"\
       OR BM1=\"" + user[1] + "\"\
-      OR BM2=\"" + user[1] + "\"") 
+      OR BM2=\"" + user[1] + "\"")
 
   result = cur.fetchone()
 
   if request.form['quantity'] != "-1":
     cur.execute("UPDATE `Shopping List`\
-              SET Quantity = " + str(request.form['quantity']) + 
+              SET Quantity = " + str(request.form['quantity']) +
               " WHERE Item = " + str(request.form['upc']) + " AND STORE=\"" +
               str(request.form['store']) + "\" AND ID = " + str(result[0]) + ";")
   else:
@@ -135,7 +135,7 @@ def update_shopping():
 
 @app.route('/add_shopping', methods = ['POST'])
 def add_shopping():
-  
+
   data = request.get_json()
 
   user = session['user_data']
@@ -146,7 +146,7 @@ def add_shopping():
       FROM House\
       WHERE HM = \"" + user[1] + "\"\
       OR BM1=\"" + user[1] + "\"\
-      OR BM2=\"" + user[1] + "\"") 
+      OR BM2=\"" + user[1] + "\"")
 
   result = cur.fetchone()
 
@@ -167,24 +167,83 @@ def add_shopping():
 
 @app.route('/wish')
 def wish_list():
-  if 'user_data' in session:
-    user = session['user_data']
-    cur = db_connect.cursor()
-    cur.execute("SELECT Votes, Name \
-        FROM `Wish List`, Item \
-        WHERE ID = (\
-            SELECT `Wish List` \
-            FROM House \
-            WHERE HM=\"" + user[1] + "\" \
-            OR BM1=\"" + user[1] + "\" \
-            OR BM2=\"" + user[1] + "\" \
-        ) AND Item.UPC = `Wish List`.UPC")
-    items = cur.fetchall()
-    cur.close()
+   if 'user_data' in session:
+       user = session['user_data']
+       cur = db_connect.cursor()
+       cur.execute("SELECT Votes, Name \
+            FROM `Wish List`, Item \
+            WHERE ID = (\
+                SELECT `Wish List` \
+                FROM House \
+                WHERE HM=\"" + user[1] + "\" \
+                OR BM1=\"" + user[1] + "\" \
+                OR BM2=\"" + user[1] + "\" \
+                ) AND Item.UPC = `Wish List`.UPC")
+        items = cur.fetchall()
+        cur.close()
 
-    return render_template("wish.html", items = items)
+    return render_template("wish.html")#, votes = voteCount)
   else:
     return redirect(url_for('.login'))
+
+@app.route('/update_wish', methods = ['POST'])
+def update_wish():
+    user = session['user_data']
+    cur = db_connect.cursor()
+
+    cur.execute("SELECT `Wish List` \
+    FROM House \
+    WHERE HM = \"" + user[1] + "\"\
+    OR BM1=\"" + user[1] + "\"\
+    OR BM2=\"" + user[1] + "\"")
+
+    result = cur.fetchone()
+
+    if request.form['votes'] != "-1":
+        cur.execute("UPDATE `Wish List` \
+        SET Votes = " + str(request.form['votes']) +
+        " WHERE UPC = " str(request.form['upc']) +
+        " AND ID = " + str(result[0]) + ";")
+
+    db_connect.commit()
+    cur.close()
+
+    return str(0)
+
+@app.route('/add_wish', methods=['POST'])
+def add_wish():
+    data = request.json()
+    user = session['user_data']
+    cur = db_connect.cursor()
+
+    cur.execute("SELECT `Wish List` \
+    FROM House \
+    WHERE HM = \"" + user[1] + "\"\
+    OR BM1=\"" + user[1] + "\"\
+    OR BM2=\"" + user[1] + "\"")
+
+    result = cur.fetchone()
+
+    cur.execute("SELECT UPC \
+    FROM `Wish List` \
+    WHERE ID = " + str(result[0]) + ";")
+
+    allUPC = cur.fetchall()
+    duplicate = 0
+
+    for item in allUPC:
+        if data['upc'] == item:
+            duplicate = 1
+            break
+
+    if duplicate == 0 and reuslt:
+        cur.execute("REPLACE INTO `Wish List` (ID, UPC, Votes) \
+        VALUES (" str(result[0]) +  "," + str(data['upc']) + "," + \
+        str(data['votes']) + ");")
+
+    db_connect.commit()
+    cur.close()
+    return str(2)
 
 @app.route('/login', methods = ['POST','GET'])
 def login():
