@@ -17,6 +17,27 @@
           <input type="password" class="form-control" id="lg_password" name="lg_password" placeholder="password">
         </div>
       </div>
+      <div class="house-group">
+        <strong>Are you a resident of a house?</strong>
+        
+        <div class="input-group-btn house-panel">
+								    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+									    <span id="house_selection">Select House</span> <span class="caret"></span>
+								    </button>
+								    <ul class="dropdown-menu" id="HouseList" name="dropdown_select" role="menu">
+								      <li><a href="#">ECA</a></li>
+								      <li><a href="#">Frueauff</a></li>
+								      <li><a href="#">Polk</a></li>
+                                      <li><a href="#">Pilot</a></li>
+								      <li><a href="#">McKaig</a></li>
+								      <li><a href="#">Lastinger</a></li>
+								    </ul>
+							    </div>
+
+                  <input type="hidden" name="house_user" id="house_user" value="Select House"> 
+                  <input type="text" name="house_password" id="house_password" placeholder="House Password "></input>
+
+      </div><br>
       {% if error %}
         <p class="text-danger"><strong>Error:</strong> {{ error }}</p>
       {% endif %}

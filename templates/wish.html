@@ -14,18 +14,18 @@
     </thead>
     <tbody>
       {% for row in items %}
-        <tr>
+        <tr data-upc={{row[0]}}>
           <td>
-            <button id="wish-list-votedown"><span class="glyphicon glyphicon-thumbs-down text-danger"></span></button>
-            {{row[0]}}
-            <button id="wish-list-voteup"><span class="glyphicon glyphicon-thumbs-up text-success"></span></button>
+            <button class="wish-list-votedown"><span class="glyphicon glyphicon-thumbs-down text-danger"></span></button>
+            <span class="row-votes">{{row[1]}}</span>
+            <button class="wish-list-voteup"><span class="glyphicon glyphicon-thumbs-up text-success"></span></button>
           </td>
-          <td>{{row[1]}}</td>
+          <td>{{row[2]}}</td>
           <td>$19.95</td>
           <td>
-            <button id="wish-list-refresh"><i class="glyphicon glyphicon-refresh text-success"></i></button>
-            <button id="wish-list-check"><i class="glyphicon glyphicon-user text-info"></i></button>
-            <button id="wish-list-remove"`><i class="glyphicon glyphicon-trash text-danger"></i></button>
+            <button class="wish-list-add"><i class="glyphicon glyphicon-plus text-success"></i></button>
+            <button class="wish-list-manage"><i class="glyphicon glyphicon-user text-info"></i></button>
+            <button class="wish-list-remove"`><i class="glyphicon glyphicon-trash text-danger"></i></button>
           </td>
         </tr>
       {% endfor %}
@@ -33,4 +33,51 @@
   </table>
   </div>
 </div>
+
+  <div id="wish-list-vote-dialog" data-type="up" data-upc="0" class="modal in" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 id="vote-title" class="modal-title">Vote</h4>
+        </div>
+        <span>
+        <div class="modal-body">
+          <h2>Who are you?</h2>
+          <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
+            {% for name in names %}
+              <li><a href="#">{{name}}</a></li>
+            {% endfor %}
+					</ul>
+          <div class="row col-12-xs text-center">
+            <button id="wish-list-vote-confirm" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
+            <button id="wish-list-vote-cancel" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <div id="wish-list-manage-dialog" class="modal in" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Manage</h4>
+        </div>
+        <div class="modal-body">
+          <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
+            {% for name in names %}
+            <li><a href="#">{{name}}</a></li>
+            {% endfor %}
+					</ul>
+          <div class="row col-12-xs text-center">
+            <button id="shop-list-add" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
+            <button id="shop-list-cancel" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+
+
 {% endblock %}
