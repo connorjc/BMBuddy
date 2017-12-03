@@ -157,19 +157,23 @@ def wish_list():
                                 WHERE House.ID = \"" + str(user[4]) + "\") \
                                 AND Item.UPC = `Wish List`.UPC \
                                 ")
-        row = cur.fetchall()
+        items = cur.fetchall()
         cur.execute("SELECT Residents\
                         FROM House\
                         WHERE ID = " + str(user[4]))
         residents = cur.fetchone()
 
-        residents = residents[0].split(",")
+        residents = set(residents[0].split(","))
         cur.close()
+        items = list(items)
+        for index,row in enumerate(items):
+          items[index] = (row[0], row[1], row[2], row[3], row[4], len(row[1].split(',')))
+        print(items)
         if "Resident" in user[0]:
             flag = False
         else:
             flag = True
-        return render_template("wish.html", items=row, names=residents, flag=flag)
+        return render_template("wish.html", items=items, names=residents, flag=flag)
     else:
         return redirect(url_for('.login'))
 
@@ -183,14 +187,41 @@ def update_wish():
         WHERE House.ID = \"" + str(user[4]) + "\"")
     result = cur.fetchone()
 
-    if request.form['votes'] != "-1":
-        cur.execute("UPDATE `Wish List` \
-                SET Votes = " + str(request.form['votes']) +
-                    " WHERE UPC = " + str(request.form['upc']) +
+    print(result)
+
+    if data['type'] != "delete": 
+        cur.execute("SELECT Votes\
+            FROM `Wish List`\
+            WHERE UPC = " + str(data['upc']) + " AND ID = " +
+            str(result[0]) + ";")
+        votes = set(cur.fetchone()[0].split(","))
+        print(votes)
+        if data['resident'] in votes:
+            if data['type'] == "down":
+                votes.remove(data['resident'])
+                print(votes)
+                vote_string = ",".join(votes)
+                print(vote_string)
+                cur.execute("UPDATE `Wish List` \
+                    SET Votes = \"" + vote_string +
+                    "\" WHERE UPC = " + str(data['upc']) +
+                    " AND ID = " + str(result[0]) + ";")
+            else:
+              cur.close()
+              return str(1) # Resident already voted for item
+        else:
+            if data['type'] == "up":
+                votes.add(data['resident'].strip())
+                print(votes)
+                vote_string = ",".join(votes)
+                print(vote_string)
+                cur.execute("UPDATE `Wish List` \
+                    SET Votes = \"" + vote_string +
+                    "\" WHERE UPC = " + str(data['upc']) +
                     " AND ID = " + str(result[0]) + ";")
     else:
         cur.execute("DELETE FROM `Wish List`\
-                            WHERE UPC = " + str(request.form['upc']) + " AND ID = " + str(result[0]) + ";")
+            WHERE UPC = " + str(data['upc']) + " AND ID = " + str(result[0]) + ";")
     
     db_connect.commit()
     cur.close()

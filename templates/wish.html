@@ -19,7 +19,7 @@
         <tr data-upc={{row[0]}}>
           <td>
             <button class="wish-list-votedown"><span class="glyphicon glyphicon-thumbs-down text-danger"></span></button>
-            <span class="row-votes">{{row[1]}}</span>
+            <span class="row-votes">{{row[5]}}</span>
             <button class="wish-list-voteup"><span class="glyphicon glyphicon-thumbs-up text-success"></span></button>
           </td>
           <td>{{row[2]}}</td>
@@ -46,20 +46,27 @@
   </div>
 </div>
 
-  <div id="wish-list-vote-dialog" data-type="up" data-upc="0" class="modal in" style="display: none;">
+  <div id="wish-list-vote-dialog" data-active-upc="" data-type="up" data-upc="0" class="modal in" style="display: none;">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h4 id="vote-title" class="modal-title">Vote</h4>
         </div>
-        <span>
         <div class="modal-body">
           <h2>Who are you?</h2>
-          <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
-            {% for name in names %}
-              <li><a href="#">{{name}}</a></li>
-            {% endfor %}
-					</ul>
+          <div id="resident-list" class="dropdown btn-group">
+            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"><span id="resident_selection">Select Name</span> <span class="caret"></span></button>
+            <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
+              <li><a href="#">Select Name</a></li>
+              {% for name in names %}
+                <li><a href="#">{{name}}</a></li>
+              {% endfor %}
+					  </ul>
+          </div>
+          <br>
+          <span id="vote-error" class="text-danger" style="display:none">Resident Name not selected</span>
+          <span id="vote-error-update" class="text-danger" style="display:none">Resident already voted for this item.</span>
+          <br>
           <div class="row col-12-xs text-center">
             <button id="wish-list-vote-confirm" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
             <button id="wish-list-vote-cancel" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>

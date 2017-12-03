@@ -46,11 +46,12 @@
   </div>
   <button>Fill with Wishlist (<i><b>Beta</b></i>)</button>
   <button>Checkout</button>
-  {% if total < budget %}
-    <h2>Total: <span class="text-success">$<span id="shopping-total">{{ '%0.2f' % total }}</span></span></h2>
-  {% endif %}
   {% if total > budget %}
-    <h2>Total: <span class="text-danger">$<span id="shopping-total">{{ '%0.2f' % total }}</span></span></h2>
+    <h2>Total: <span class="text-danger">$<span id="shopping-total" data-budget={{budget}}>{{ '%0.2f' % total }}</span></span></h2>
+  {% elif total < (budget - 50) %}
+    <h2>Total: <span class="text-success">$<span id="shopping-total" data-budget={{budget}}>{{ '%0.2f' % total }}</span></span></h2>
+  {% else %}
+    <h2>Total: <span class="text-warning">$<span id="shopping-total" data-budget={{budget}}>{{ '%0.2f' % total }}</span></span></h2>
   {% endif %}
 </div>
 {% endblock %}
