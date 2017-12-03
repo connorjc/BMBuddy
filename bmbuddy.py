@@ -35,17 +35,10 @@ def homepage():
     else:
         return render_template("index.html")
 
-
-#Name, Username - From Admin | Name, Budget, ID - From House
-
 @app.route('/search', methods=['POST'])
 def search():
-    print("I am in search")
-    print(request.form)
     param = request.form['search_param']
     criteria = request.form['search_crit']
-
-    print(param, criteria)
 
     results = None
 
@@ -53,7 +46,6 @@ def search():
         results = searchbar.query(param, criteria)
 
     if results and len(results) == 1:
-        print(results)
         brandName, walmartPrice, costcoPrice, name, upc = results[0]
 
         image = None
@@ -66,7 +58,6 @@ def search():
         return render_template("product.html", name=name, brand=brandName, upc=upc, wPrice=walmartPrice, cPrice=costcoPrice, image=image)
     else:
         return render_template("search.html", items=results)
-
 
 @app.route('/shopping')
 def shopping_list():
@@ -87,11 +78,14 @@ def shopping_list():
             if row[0] == 'Walmart' and row[3] != None:
                 total += row[2] * row[3]
             elif row[4] != None:
-                total += row[2] * row[4]
-        return render_template("shopping.html", items=items, total=round(total, 2), budget=round(budget, 2))
+                total += row[2] * row[4]  
+        
+        if "Resident" in user[0]:
+            return render_template("home.html", name=user[0], house=user[2], budget=user[3])
+        else:
+            return render_template("shopping.html", items=items, total=round(total, 2), budget=round(budget, 2))
     else:
         return redirect(url_for('.login'))
-
 
 @app.route('/update_shopping', methods=['POST'])
 def update_shopping():
@@ -120,7 +114,6 @@ def update_shopping():
     cur.close()
 
     return str(0)
-
 
 @app.route('/add_shopping', methods=['POST'])
 def add_shopping():
@@ -151,14 +144,12 @@ def add_shopping():
     cur.close()
     return str(2)
 
-
 @app.route('/wish')
 def wish_list():
     if 'user_data' in session:
         user = session['user_data']
-        print(user)
         cur = db_connect.cursor()
-        cur.execute("SELECT Item.UPC, Votes, Name \
+        cur.execute("SELECT Item.UPC, Votes, Name, WalmartPrice, CostcoPrice \
                         FROM `Wish List`, Item \
                         WHERE ID = (\
                                 SELECT `Wish List` \
@@ -173,13 +164,14 @@ def wish_list():
         residents = cur.fetchone()
 
         residents = residents[0].split(",")
-        print(residents)
-        print(type(residents))
         cur.close()
-        return render_template("wish.html", items=row, names=residents)
+        if "Resident" in user[0]:
+            flag = False
+        else:
+            flag = True
+        return render_template("wish.html", items=row, names=residents, flag=flag)
     else:
         return redirect(url_for('.login'))
-
 
 @app.route('/update_wish', methods=['POST'])
 def update_wish():
@@ -204,7 +196,6 @@ def update_wish():
     cur.close()
 
     return str(0)
-
 
 @app.route('/add_wish', methods=['POST'])
 def add_wish():
@@ -238,10 +229,8 @@ def add_wish():
     cur.close()
     return str(2)
 
-
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    print(request.form)
     if request.method == 'GET':
         return render_template("login.html")
     elif request.method == 'POST':
@@ -251,6 +240,8 @@ def login():
                 request.form['lg_username'] + "\" AND Password=\"" +
                 request.form['lg_password'] + "\";")
             user = cur.fetchone()
+            if user is None:
+                return render_template("login.html", error="Invalid username/password. Please try again.")
             cur.execute("SELECT Name, Budget, ID \
                 FROM House \
                 WHERE HM=\"" + user[1] + "\" \
@@ -264,27 +255,22 @@ def login():
                 request.form['house_user'] + "\" AND Password=\"" +
                 request.form['house_password'] + "\";")
             user = cur.fetchone()
+            if user is None:
+                return render_template("login.html", error="Invalid username/password. Please try again.")
             cur.execute("SELECT Name, Budget, ID \
                 FROM House \
                 WHERE House.Name LIKE \"" + user[1] + "%\"")
             house = cur.fetchone()
-            user_data = user + house 
             cur.close()
-
-    if user_data:
-        print(user_data)
-        session['user_data'] = user_data
-        return redirect(url_for('.homepage'))
-    else:
-        return render_template("login.html", error="Invalid username/password. Please try again.")
-
+            user_data = user + house
+    session['user_data'] = user_data
+    return redirect(url_for('.homepage'))
 
 @app.route('/logout')
 def logout():
     if 'user_data' in session:
         session.pop('user_data', None)
         return render_template("index.html")
-
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 2222)

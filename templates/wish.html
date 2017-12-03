@@ -9,7 +9,9 @@
         <th>Votes</th>
         <th>Name</th>
         <th>Price</th>
+        {% if flag %}
         <th>Actions</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
@@ -21,12 +23,22 @@
             <button class="wish-list-voteup"><span class="glyphicon glyphicon-thumbs-up text-success"></span></button>
           </td>
           <td>{{row[2]}}</td>
-          <td>$19.95</td>
+
+          {% if row[3] == None %}
+          <td>${{row[4]}}</td>
+          {% elif row[4] == None %}
+          <td>${{row[3]}}</td>
+          {% elif row[3] > row[4] %}
+          <td>${{row[4]}}</td>  
+          {% else %}
+          <td>${{row[3]}}</td>
+          {% endif %}
+
+          {% if flag %}
           <td>
-            <button class="wish-list-add"><i class="glyphicon glyphicon-plus text-success"></i></button>
-            <button class="wish-list-manage"><i class="glyphicon glyphicon-user text-info"></i></button>
             <button class="wish-list-remove"`><i class="glyphicon glyphicon-trash text-danger"></i></button>
           </td>
+          {% endif %}
         </tr>
       {% endfor %}
     </tbody>
@@ -79,5 +91,6 @@
   </div><!-- /.modal -->
 
 
+    <button class="wish-list-add"><i class="glyphicon glyphicon-plus text-success"></i></button>
 
 {% endblock %}
