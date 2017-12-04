@@ -55,7 +55,10 @@ def search():
                 image = file
                 break
 
-        return render_template("product.html", name=name, brand=brandName, upc=upc, wPrice=walmartPrice, cPrice=costcoPrice, image=image)
+        if 'user_data' in session:
+            user = session['user_data']
+            return render_template("product.html", name=name, brand=brandName, upc=upc, wPrice=walmartPrice, cPrice=costcoPrice, image=image, names=user[5], user=user[0])
+        return render_template("product.html", name=name, brand=brandName, upc=upc, wPrice=walmartPrice, cPrice=costcoPrice, image=image, names=False)
     else:
         return render_template("search.html", items=results)
 
@@ -158,12 +161,6 @@ def wish_list():
                                 AND Item.UPC = `Wish List`.UPC \
                                 ")
         items = cur.fetchall()
-        cur.execute("SELECT Residents\
-                        FROM House\
-                        WHERE ID = " + str(user[4]))
-        residents = cur.fetchone()
-
-        residents = set(residents[0].split(","))
         cur.close()
         items = list(items)
         for index,row in enumerate(items):
@@ -173,7 +170,8 @@ def wish_list():
             flag = False
         else:
             flag = True
-        return render_template("wish.html", items=items, names=residents, flag=flag)
+        print(user)
+        return render_template("wish.html", items=items, names=user[5], flag=flag)
     else:
         return redirect(url_for('.login'))
 
@@ -182,6 +180,8 @@ def update_wish():
     user = session['user_data']
     cur = db_connect.cursor()
 
+    data = request.get_json()
+    
     cur.execute("SELECT `Wish List`\
         FROM House \
         WHERE House.ID = \"" + str(user[4]) + "\"")
@@ -208,10 +208,10 @@ def update_wish():
                     " AND ID = " + str(result[0]) + ";")
             else:
               cur.close()
-              return str(1) # Resident already voted for item
+              return str(0) # Resident already voted for item
         else:
             if data['type'] == "up":
-                votes.add(data['resident'].strip())
+                votes.add(data['resident'])
                 print(votes)
                 vote_string = ",".join(votes)
                 print(vote_string)
@@ -226,17 +226,17 @@ def update_wish():
     db_connect.commit()
     cur.close()
 
-    return str(0)
+    return str(2)
 
 @app.route('/add_wish', methods=['POST'])
 def add_wish():
-    data = request.json()
+    data = request.get_json()
     user = session['user_data']
     cur = db_connect.cursor()
 
     cur.execute("SELECT `Wish List`\
         FROM House \
-        WHERE House.ID = \"" + str(user[4]) + "\"")
+        WHERE ID = \"" + str(user[4]) + "\"")
     result = cur.fetchone()
 
     cur.execute("SELECT UPC \
@@ -244,21 +244,37 @@ def add_wish():
         WHERE ID = " + str(result[0]) + ";")
 
     allUPC = cur.fetchall()
-    duplicate = 0
 
-    for item in allUPC:
-        if data['upc'] == item:
-            duplicate = 1
-            break
+    allUPC = (x[0] for x in allUPC)
+    print(allUPC)
 
-    if duplicate == 0 and reuslt:
-        cur.execute("REPLACE INTO `Wish List` (ID, UPC, Votes) \
-                VALUES (" + str(result[0]) + "," + str(data['upc']) + "," +
-                    str(data['votes']) + ");")
-
+    if data['upc'] in allUPC:
+      cur.execute("SELECT Votes\
+            FROM `Wish List`\
+            WHERE UPC = \"" + str(data['upc']) + "\" AND ID = " +
+            str(result[0]) + ";")
+      votes = set(cur.fetchone()[0].split(","))
+      print(votes)
+      if data['resident'] in votes:
+          cur.close()
+          return str(1) # Resident already voted for item
+      else:
+          votes.add(data['resident'])
+          print(votes)
+          vote_string = ",".join(votes)
+          print(vote_string)
+          cur.execute("UPDATE `Wish List` \
+              SET Votes = \"" + vote_string +
+              "\" WHERE UPC = " + str(data['upc']) +
+              " AND ID = " + str(result[0]) + ";")
+    else:
+        print(data['upc'])
+        cur.execute("INSERT INTO `Wish List` (ID, UPC, Votes) VALUES (" +
+            str(result[0]) + ", \"" + str(data['upc']) + "\", \"" +
+            data['resident'] + "\");")
     db_connect.commit()
     cur.close()
-    return str(2)
+    return str(0)
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -273,14 +289,21 @@ def login():
             user = cur.fetchone()
             if user is None:
                 return render_template("login.html", error="Invalid username/password. Please try again.")
-            cur.execute("SELECT Name, Budget, ID \
+            cur.execute("SELECT Name, Budget, ID, Residents \
                 FROM House \
                 WHERE HM=\"" + user[1] + "\" \
                 OR BM1=\"" + user[1] + "\" \
                 OR BM2=\"" + user[1] + "\"")
             house = cur.fetchone()
             cur.close()
-            user_data = user + house 
+            house = list(house)
+            residents = house[3].split(",")
+            res = []
+            for r in residents: 
+                res.append(r.strip())
+            res.sort()
+            house[3] = res
+            user_data = user + tuple(house)
         else:
             cur.execute("SELECT Name, Username FROM Admin WHERE Username=\"" +
                 request.form['house_user'] + "\" AND Password=\"" +
@@ -288,12 +311,19 @@ def login():
             user = cur.fetchone()
             if user is None:
                 return render_template("login.html", error="Invalid username/password. Please try again.")
-            cur.execute("SELECT Name, Budget, ID \
+            cur.execute("SELECT Name, Budget, ID, Residents \
                 FROM House \
                 WHERE House.Name LIKE \"" + user[1] + "%\"")
             house = cur.fetchone()
             cur.close()
-            user_data = user + house
+            house = list(house)
+            residents = house[3].split(",")
+            res = []
+            for r in residents: 
+                res.append(r.strip())
+            res.sort()
+            house[3] = res
+            user_data = user + tuple(house)
     session['user_data'] = user_data
     return redirect(url_for('.homepage'))
 
@@ -301,7 +331,7 @@ def login():
 def logout():
     if 'user_data' in session:
         session.pop('user_data', None)
-        return render_template("index.html")
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 2222)

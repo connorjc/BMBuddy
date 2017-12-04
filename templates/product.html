@@ -45,7 +45,7 @@
       </div>
   </div>
 
-  <div id="add-list-dialog" class="modal in" style="display: none;">
+  <div class="add-list-dialog" data-type="shopping" class="modal in" style="display: none;">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -66,7 +66,7 @@
             <tbody>
               <tr>
                 <td data-th="Product">Walmart</td>
-                <td id="row-price" data-th="Price">{{ wPrice }}</td>
+                <td class="row-price" data-th="Price">{{ wPrice }}</td>
                 <td data-th="Quantity">
                   <input id="walmartQuantity" class="row-quantity" type="number" class="form-control text-center" value="0" min="0">
                 </td>
@@ -77,7 +77,7 @@
               </tr>
               <tr>
                 <td data-th="Product">Costco</td>
-                <td id="row-price" data-th="Price">{{ cPrice }}</td>
+                <td class="row-price" data-th="Price">{{ cPrice }}</td>
                 <td data-th="Quantity">
                   <input id="costcoQuantity" class="row-quantity" type="number" class="form-control text-center" value="0" min="0">
                 </td>
@@ -96,75 +96,51 @@
             </tfoot>
           </table>
           <div class="row col-12-xs text-center">
-            <button id="shop-list-add" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
-            <button id="shop-list-cancel" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
+            <button id="list-add" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
+            <button id="list-cancel" data-type="shopping" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
           </div>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="wish-list-dialog" class="modal in" style="display: none;">
+
+  <div id="wish-list-add-dialog" data-active-upc={{upc}} class="modal in" style="display: none;">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h4 class="modal-title">Add to Wish List</h4>
         </div>
         <div class="modal-body">
-          
-          <table id="cart" class="table table-hover table-condensed">
-            <thead>
-              <tr>
-                <th style="width:50%">Store</th>
-                <th style="width:10%">Price</th>
-                <th style="width:8%">Quantity</th>
-                <th style="width:22%" class="text-center">Subtotal</th>
-                <th style="width:10%"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td data-th="Product">Walmart</td>
-                <td id="row-price" data-th="Price">{{ wPrice }}</td>
-                <td data-th="Quantity">
-                  <input id="walmartQuantity" class="row-quantity" type="number" class="form-control text-center" value="0" min="0">
-                </td>
-                <td class="row-subtotal" data-th="Subtotal" class="text-center">0.00</td>
-                <td class="actions" data-th="">
-                  <button id="shop-list-refresh" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-refresh"></i></button>
-                </td>
-              </tr>
-              <tr>
-                <td data-th="Product">Costco</td>
-                <td id="row-price" data-th="Price">{{ cPrice }}</td>
-                <td data-th="Quantity">
-                  <input id="costcoQuantity" class="row-quantity" type="number" class="form-control text-center" value="0" min="0">
-                </td>
-                <td class="row-subtotal" data-th="Subtotal" class="text-center">0.00</td>
-                <td class="actions" data-th="">
-                  <button id="shop-list-refresh" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-refresh"></i></button>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3"></td>
-                <td>Total</td>
-                <td id="shopping-total">0.00</td>
-              </tr>
-            </tfoot>
-          </table>
+          <h2>Who are you?</h2>
+          <div id="resident-list" class="dropdown btn-group">
+            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"><span id="resident_selection">Select Name</span> <span class="caret"></span></button>
+            <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
+              <li><a href="#">Select Name</a></li>
+              {% if names %}
+                {% for name in names %}
+                  <li><a href="#">{{name}}</a></li>
+                {% endfor %}
+              {% endif %}
+					  </ul>
+          </div>
+          <br>
+          <span id="vote-error" class="text-danger" style="display:none">Resident Name not selected</span>
+          <span id="vote-error-update" class="text-danger" style="display:none">Resident already voted for this item.</span>
+          <br>
           <div class="row col-12-xs text-center">
-            <button id="wish-list-add" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
-            <button id="wish-list-cancel" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
+            <button id="wish-list-add-confirm" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
+            <button id="list-cancel" data-type="wish" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
           </div>
         </div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-
-
-  <button class="add_button btn" data-type="shopping" type="button">Add to Shopping List</button>
-  <button class="add_button btn" data-type="wish" type="button">Add to Wish List</button>
+  {% if names %}
+    {% if "Resident" not in user %}
+      <button class="add_button btn btn-default" data-type="shopping" type="button">Add to Shopping List</button>
+    {% endif %}
+  <button class="add_button btn btn-default" data-type="wish" type="button">Add to Wish List</button>
+  {% endif %}
 {% endblock %}

@@ -8,7 +8,8 @@
       <tr>
         <th>Votes</th>
         <th>Name</th>
-        <th>Price</th>
+        <th>Walmart</th>
+        <th>Costco</th>
         {% if flag %}
         <th>Actions</th>
         {% endif %}
@@ -23,19 +24,11 @@
             <button class="wish-list-voteup"><span class="glyphicon glyphicon-thumbs-up text-success"></span></button>
           </td>
           <td>{{row[2]}}</td>
-
-          {% if row[3] == None %}
-          <td>${{row[4]}}</td>
-          {% elif row[4] == None %}
-          <td>${{row[3]}}</td>
-          {% elif row[3] > row[4] %}
-          <td>${{row[4]}}</td>  
-          {% else %}
-          <td>${{row[3]}}</td>
-          {% endif %}
-
+          <td class="walmart">{{row[3]}}</td>
+          <td class="costco">{{row[4]}}</td>
           {% if flag %}
           <td>
+            <button class="wish-list-add"><i class="glyphicon glyphicon-plus text-success"></i></button>
             <button class="wish-list-remove"`><i class="glyphicon glyphicon-trash text-danger"></i></button>
           </td>
           {% endif %}
@@ -97,7 +90,65 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
+  <div class="add-list-dialog" data-type="shopping" class="modal in" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 id="add-list-dialog-title" class="modal-title">Add to Shopping List</h4>
+        </div>
+        <div class="modal-body">
+          
+          <table id="cart" class="table table-hover table-condensed">
+            <thead>
+              <tr>
+                <th style="width:50%">Store</th>
+                <th style="width:10%">Price</th>
+                <th style="width:8%">Quantity</th>
+                <th style="width:22%" class="text-center">Subtotal</th>
+                <th style="width:10%"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-th="Product">Walmart</td>
+                <td id="wish-add-walmart-price" class="row-price" data-th="Price"></td>
+                <td data-th="Quantity">
+                  <input id="walmartQuantity" class="row-quantity" type="number" class="form-control text-center" value="0" min="0">
+                </td>
+                <td class="row-subtotal" data-th="Subtotal" class="text-center">0.00</td>
+                <td class="actions" data-th="">
+                  <button id="shop-list-refresh" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-refresh"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td data-th="Product">Costco</td>
+                <td id="wish-add-costco-price" class="row-price" data-th="Price"></td>
+                <td data-th="Quantity">
+                  <input id="costcoQuantity" class="row-quantity" type="number" class="form-control text-center" value="0" min="0">
+                </td>
+                <td class="row-subtotal" data-th="Subtotal" class="text-center">0.00</td>
+                <td class="actions" data-th="">
+                  <button id="shop-list-refresh" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-refresh"></i></button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3"></td>
+                <td>Total</td>
+                <td id="shopping-total">0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="row col-12-xs text-center">
+            <button id="list-add" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
+            <button id="list-cancel" data-type="shopping" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
+          </div>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
 
-    <button class="wish-list-add"><i class="glyphicon glyphicon-plus text-success"></i></button>
+
 
 {% endblock %}

@@ -27,11 +27,11 @@ $(document).ready(function(e){
     $('.add_button').click(function() {
       var type = $(this).attr("data-type");
       if (type == "shopping") {
-        $('#add-list-dialog-title').text("Add to Shopping List");
-      } else { 
-        $('#add-list-dialog-title').text("Add to Wish List");
+        $('.add-list-dialog').show("fast");
+      } else {
+        $('#resident_selection').text('Select Name'); 
+        $('#wish-list-add-dialog').show("fast");
       }
-      $('#add-list-dialog').show("fast");
     });
 
     $('#search-button').click(function() {
@@ -49,28 +49,56 @@ $(document).ready(function(e){
 
     });
 
-    $('#shop-list-add').click(function() {
+    $('#list-add').click(function() {
       var walmart = $('#walmartQuantity').val();
       var costco = $('#costcoQuantity').val();
-      
+      var type = $('.add-list-dialog').attr('data-type') 
       $.ajax({
         url: "/add_shopping",
         type: "POST",
         data: JSON.stringify({ walmartQuantity: walmart, costcoQuantity: costco,
-            upc: $('#product').attr('data-upc') }),
+          upc: $('#product').attr('data-upc') }),
         contentType: "application/json; charset=utf-8",
         success: function(response) { $('#walmartQuantity').val(0); $('#costcoQuantity').val(0); 
-            $('#add-list-dialog').hide(); }
-      });
-
+          $('.add-list-dialog').hide(); }
+      }); 
     });
 
-    $('#shop-list-cancel').click(function() {
-      $('#add-list-dialog').hide();
+    $('#wish-list-add-confirm').click(function() {
+
+      var type = $('#wish-list-add-dialog').attr("data-type");
+      var resident = $('#resident_selection').text();
+      var upc = $('#wish-list-add-dialog').attr("data-active-upc");
+
+      var result;
+
+      if (resident == "Select Name") {
+        $('#vote-error').show('fast');
+      } else {
+        $.ajax({
+          url: "/add_wish",
+          type: "POST",
+          data: JSON.stringify({ resident: resident, type: type, upc: upc }),
+          contentType: "application/json; charset=utf-8",
+          success: function(response) {
+            if (response == "1")
+              $('vote-error-update').show('fast');
+          }
+        });
+      }
+      $('#wish-list-add-dialog').hide();
+    });
+
+    $(document.body).on('click', '#list-cancel' ,function(){
+      var id = $(this).attr('data-type');
+      if (id == "wish")
+        $('#wish-list-add-dialog').hide();
+      else
+        $('.add-list-dialog').hide();
     });
 
     $(document.body).on('click', '#shop-list-refresh' ,function(){
-      var price = parseFloat($(this).parent().parent().find('#row-price').text());
+      var price = parseFloat($(this).parent().parent().find('.row-price').text());
       var quantity = parseFloat($(this).parent().parent().find('.row-quantity').val());
       var upc = $(this).parent().parent().find('#row-name').attr('data-upc');
       var store = $(this).parent().parent().find('#row-store').text();
@@ -90,7 +118,7 @@ $(document).ready(function(e){
         $('#shopping-total').parent().attr('class','text-danger');
       else if (sum < (budget - 50))
         $('#shopping-total').parent().attr('class','text-success');
-      else
+      else if (budget)
         $('#shopping-total').parent().attr('class','text-warning');
 
       $('#shopping-total').text(sum.toFixed(2));
@@ -109,6 +137,14 @@ $(document).ready(function(e){
       var prevTotal = parseFloat($('#shopping-total').text());
 
       var newTotal = prevTotal - subtotal;
+
+      var budget = $('#shopping-total').attr('data-budget')
+      if (newTotal > budget)
+        $('#shopping-total').parent().attr('class','text-danger');
+      else if (newTotal < (budget - 50))
+        $('#shopping-total').parent().attr('class','text-success');
+      else
+        $('#shopping-total').parent().attr('class','text-warning');
 
       $('#shopping-total').text(newTotal.toFixed(2));
 
@@ -131,6 +167,7 @@ $(document).ready(function(e){
       $("#vote-title").text("Vote Up"); 
       $("#wish-list-vote-dialog").attr("data-active-upc",upc);
       $("#wish-list-vote-dialog").show("fast");
+      $(this).parent().parent().attr('id','active');
     });
 
     $(document.body).on('click', '.wish-list-votedown', function(){
@@ -146,7 +183,17 @@ $(document).ready(function(e){
       $("#vote-title").text("Vote Down"); 
       $("#wish-list-vote-dialog").attr("data-active-upc",upc);
       $("#wish-list-vote-dialog").show("fast");
+      $(this).parent().parent().attr('id','active');
     });
+
+    $(document.body).on('click', '.wish-list-add' ,function(){
+      var wPrice = $(this).parent().parent().find('.walmart').text();
+      var cPrice = $(this).parent().parent().find('.costco').text();
+      $('#wish-add-walmart-price').text(wPrice);
+      $('#wish-add-costco-price').text(cPrice);
+      $('.add-list-dialog').show('fast');
+    });
+
 
     $(document.body).on('click', '.wish-list-remove' ,function(){
       
@@ -159,11 +206,9 @@ $(document).ready(function(e){
         type: "POST",
         data: JSON.stringify({ type: "delete", upc: upc }),
         contentType: "application/json; charset=utf-8",
-        success: function(response) { result = response; }
+        success: function(response) { }
       });
       
-//      $.post("update_wish", { type : "delete", upc : upc } );
-
       $(this).parent().parent().remove();
 
     });
@@ -178,18 +223,25 @@ $(document).ready(function(e){
     if (resident == "Select Name") {
       $('#vote-error').show('fast');
     } else {
-     $.ajax({
+
+      $.ajax({
         url: "/update_wish",
         type: "POST",
         data: JSON.stringify({ resident: resident, type: type, upc: upc }),
         contentType: "application/json; charset=utf-8",
-        success: function(response) { result = response; }
+        success: function(response) {
+          if (type == "up") {
+            var votes = parseInt($('#active .row-votes').text()) + 1;
+            $('#active .row-votes').text(votes);
+            $('#active').removeAttr('id');
+          } else {
+            var votes = parseInt($('#active .row-votes').text()) - 1;
+            $('#active .row-votes').text(votes);
+            $('#active').removeAttr('id');
+          }
+        }
       });
 
-    //var result = $.post("update_wish", { resident: resident, upc : upc, type : type } );
-      if (result == "1") {
-        $('vote-error-update').show('fast');
-      }
     }
     $('#wish-list-vote-dialog').hide();
   });
