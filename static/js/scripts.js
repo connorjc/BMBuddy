@@ -23,6 +23,9 @@ $(document).ready(function(e){
  //       $('.input-group #search_param').val(param);
         });
 
+    $('#fill-shopping').click(function() {
+      $('#fill-wishlist-dialog').show("fast");
+    });
 
     $('.add_button').click(function() {
       var type = $(this).attr("data-type");
@@ -52,16 +55,41 @@ $(document).ready(function(e){
     $('#list-add').click(function() {
       var walmart = $('#walmartQuantity').val();
       var costco = $('#costcoQuantity').val();
-      var type = $('.add-list-dialog').attr('data-type') 
+      var isWish = $(this).attr('data-type') 
+      
+      if (isWish == "wish")
+        upc = $('#active').attr('data-upc')
+      else
+        upc = $('#product').attr('data-upc')
+      
       $.ajax({
         url: "/add_shopping",
         type: "POST",
-        data: JSON.stringify({ walmartQuantity: walmart, costcoQuantity: costco,
-          upc: $('#product').attr('data-upc') }),
+        data: JSON.stringify({ walmartQuantity: walmart, costcoQuantity: costco, upc: upc }),
         contentType: "application/json; charset=utf-8",
         success: function(response) { $('#walmartQuantity').val(0); $('#costcoQuantity').val(0); 
           $('.add-list-dialog').hide(); }
-      }); 
+      });
+
+      if (isWish == "wish")
+      {
+        $.ajax({
+          url: "/update_wish",
+          type: "POST",
+          data: JSON.stringify({ type: "delete", upc: upc }),
+          contentType: "application/json; charset=utf-8",
+          success: function(response) { }
+        });
+        $('#active').remove();
+      } 
+    });
+
+    $(document.body).on('click', '#shopping-clear' ,function(){
+      $.post('clear_shopping');
+      $('#shopping-body').find("tr").remove();
+      $('#shopping-count').text('0');
+      $('#shopping-total').text('0.00');
+      $('#shopping-total').parent().attr('class','text-success');
     });
 
     $('#wish-list-add-confirm').click(function() {
@@ -89,12 +117,18 @@ $(document).ready(function(e){
       $('#wish-list-add-dialog').hide();
     });
 
+    $(document.body).on('click', '#fill-wish-confirm' ,function(){
+      $('#fill-wishlist-dialog').hide();
+    });
+    
     $(document.body).on('click', '#list-cancel' ,function(){
-      var id = $(this).attr('data-type');
-      if (id == "wish")
+      var type = $(this).attr('data-type');
+      if (type == "wish")
         $('#wish-list-add-dialog').hide();
-      else
+      else if (type == "shopping")
         $('.add-list-dialog').hide();
+      else
+        $('#fill-wishlist-dialog').hide();
     });
 
     $(document.body).on('click', '#shop-list-refresh' ,function(){
@@ -133,6 +167,7 @@ $(document).ready(function(e){
       var subtotal = parseFloat($(this).parent().parent().find('.row-subtotal').text());
       var store = $(this).parent().parent().find('#row-store').text();
 
+      var prevCount = $('#shopping-count').text()
       
       var prevTotal = parseFloat($('#shopping-total').text());
 
@@ -147,6 +182,7 @@ $(document).ready(function(e){
         $('#shopping-total').parent().attr('class','text-warning');
 
       $('#shopping-total').text(newTotal.toFixed(2));
+      $('#shopping-count').text(parseInt(prevCount) - 1);
 
       $.post("update_shopping", { quantity : -1, upc : upc, store : store } );
 
@@ -192,6 +228,7 @@ $(document).ready(function(e){
       $('#wish-add-walmart-price').text(wPrice);
       $('#wish-add-costco-price').text(cPrice);
       $('.add-list-dialog').show('fast');
+      $(this).parent().parent().attr('id','active');
     });
 
 

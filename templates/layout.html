@@ -33,9 +33,6 @@
               <li><a href="/shopping">Shopping List</a></li>
             {% endif %}
             <li><a href="/wish">Wish List</a></li>
-            {% if "Resident" not in session['user_data'][0] %}
-              <li><a href="#">Purchased</a></li>
-            {% endif %}
         </ul>
         {% endif %}
 		    <form id="search-form" class="navbar-form" action="search" method="post">

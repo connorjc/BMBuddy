@@ -74,6 +74,13 @@ def shopping_list():
                         FROM House \
                         WHERE House.ID = \"" + str(user[4]) + "\" AND UPC = Item)")
         items = cur.fetchall()
+
+        cur.execute("SELECT COUNT(Item) FROM `Shopping List` WHERE `Shopping List`.ID = (\
+                SELECT `Shopping List` \
+                FROM House \
+                WHERE House.ID = \"" + str(user[4]) + "\")")
+
+        count = cur.fetchone()
         cur.close()
         budget = user[3] 
         total = 0
@@ -86,9 +93,28 @@ def shopping_list():
         if "Resident" in user[0]:
             return render_template("home.html", name=user[0], house=user[2], budget=user[3])
         else:
-            return render_template("shopping.html", items=items, total=round(total, 2), budget=round(budget, 2))
+            return render_template("shopping.html", items=items,
+                total=round(total, 2), budget=round(budget, 2), count=count[0])
     else:
         return redirect(url_for('.login'))
+
+@app.route('/clear_shopping', methods=['POST'])
+def clear_shopping():
+
+    user = session['user_data']
+
+    cur = db_connect.cursor()
+
+    cur.execute("DELETE FROM `Shopping List` WHERE ID = (\
+                SELECT `Shopping List` \
+                FROM House \
+                WHERE House.ID = \"" + str(user[4]) + "\")")
+
+    db_connect.commit()
+
+    cur.close()
+
+    return str(1) 
 
 @app.route('/update_shopping', methods=['POST'])
 def update_shopping():
@@ -117,6 +143,10 @@ def update_shopping():
     cur.close()
 
     return str(0)
+
+@app.route('/fill_wish', methods=['POST'])
+def fill_wish():
+    return str(1) 
 
 @app.route('/add_shopping', methods=['POST'])
 def add_shopping():
@@ -152,19 +182,21 @@ def wish_list():
     if 'user_data' in session:
         user = session['user_data']
         cur = db_connect.cursor()
-        cur.execute("SELECT Item.UPC, Votes, Name, WalmartPrice, CostcoPrice \
+    
+        cur.execute("SELECT Item.UPC, Votees, Name, WalmartPrice, CostcoPrice, Votes \
                         FROM `Wish List`, Item \
                         WHERE ID = (\
                                 SELECT `Wish List` \
                                 FROM House \
                                 WHERE House.ID = \"" + str(user[4]) + "\") \
                                 AND Item.UPC = `Wish List`.UPC \
-                                ")
+                                GROUP BY Item.UPC, Votees, Votes \
+                                ORDER BY Votes desc")
         items = cur.fetchall()
         cur.close()
         items = list(items)
         for index,row in enumerate(items):
-          items[index] = (row[0], row[1], row[2], row[3], row[4], len(row[1].split(',')))
+          items[index] = (row[0], row[1], row[2], row[3], row[4], row[5])
         print(items)
         if "Resident" in user[0]:
             flag = False
@@ -190,34 +222,34 @@ def update_wish():
     print(result)
 
     if data['type'] != "delete": 
-        cur.execute("SELECT Votes\
+        cur.execute("SELECT Votees\
             FROM `Wish List`\
             WHERE UPC = " + str(data['upc']) + " AND ID = " +
             str(result[0]) + ";")
-        votes = set(cur.fetchone()[0].split(","))
-        print(votes)
-        if data['resident'] in votes:
+        votees = set(cur.fetchone()[0].split(","))
+        print(votees)
+        if data['resident'] in votees:
             if data['type'] == "down":
-                votes.remove(data['resident'])
-                print(votes)
-                vote_string = ",".join(votes)
-                print(vote_string)
+                votees.remove(data['resident'])
+                print(votees)
+                votee_string = ",".join(votees)
+                print(votee_string)
                 cur.execute("UPDATE `Wish List` \
-                    SET Votes = \"" + vote_string +
-                    "\" WHERE UPC = " + str(data['upc']) +
+                    SET Votees = \"" + votee_string + "\", Votes = " +
+                    str(len(votees)) + " WHERE UPC = " + str(data['upc']) +
                     " AND ID = " + str(result[0]) + ";")
             else:
               cur.close()
               return str(0) # Resident already voted for item
         else:
             if data['type'] == "up":
-                votes.add(data['resident'])
-                print(votes)
-                vote_string = ",".join(votes)
-                print(vote_string)
+                votees.add(data['resident'])
+                print(votees)
+                votee_string = ",".join(votees)
+                print(votee_string)
                 cur.execute("UPDATE `Wish List` \
-                    SET Votes = \"" + vote_string +
-                    "\" WHERE UPC = " + str(data['upc']) +
+                    SET Votees = \"" + votee_string + "\", Votes = " +
+                    str(len(votees)) + " WHERE UPC = " + str(data['upc']) +
                     " AND ID = " + str(result[0]) + ";")
     else:
         cur.execute("DELETE FROM `Wish List`\
@@ -249,29 +281,29 @@ def add_wish():
     print(allUPC)
 
     if data['upc'] in allUPC:
-      cur.execute("SELECT Votes\
+      cur.execute("SELECT Votees\
             FROM `Wish List`\
             WHERE UPC = \"" + str(data['upc']) + "\" AND ID = " +
             str(result[0]) + ";")
-      votes = set(cur.fetchone()[0].split(","))
-      print(votes)
-      if data['resident'] in votes:
+      votees = set(cur.fetchone()[0].split(","))
+      print(votees)
+      if data['resident'] in votees:
           cur.close()
           return str(1) # Resident already voted for item
       else:
-          votes.add(data['resident'])
-          print(votes)
-          vote_string = ",".join(votes)
-          print(vote_string)
+          votees.add(data['resident'])
+          print(votees)
+          votee_string = ",".join(votees)
+          print(votee_string)
           cur.execute("UPDATE `Wish List` \
-              SET Votes = \"" + vote_string +
-              "\" WHERE UPC = " + str(data['upc']) +
+              SET Votees = \"" + votee_string + "\", Votes = " + 
+              str(len(votees)) + " WHERE UPC = " + str(data['upc']) +
               " AND ID = " + str(result[0]) + ";")
     else:
         print(data['upc'])
-        cur.execute("INSERT INTO `Wish List` (ID, UPC, Votes) VALUES (" +
+        cur.execute("INSERT INTO `Wish List` (ID, UPC, Votees, Votes) VALUES (" +
             str(result[0]) + ", \"" + str(data['upc']) + "\", \"" +
-            data['resident'] + "\");")
+            data['resident'] + "\", 1);")
     db_connect.commit()
     cur.close()
     return str(0)
@@ -295,6 +327,7 @@ def login():
                 OR BM1=\"" + user[1] + "\" \
                 OR BM2=\"" + user[1] + "\"")
             house = cur.fetchone()
+            print("PRINTING HOUSE: " + str(house))
             cur.close()
             house = list(house)
             residents = house[3].split(",")
@@ -325,6 +358,8 @@ def login():
             house[3] = res
             user_data = user + tuple(house)
     session['user_data'] = user_data
+    print("LOGGING IN:")
+    print(user_data)
     return redirect(url_for('.homepage'))
 
 @app.route('/logout')
