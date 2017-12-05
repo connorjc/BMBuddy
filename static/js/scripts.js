@@ -1,11 +1,9 @@
 $(document).ready(function(e){
     $('.search-panel .dropdown-menu').find('a').click(function(e) {
         e.preventDefault();
- //       var param = $(this).attr("href").replace("#","");
         var concept = $(this).text();
         $('.search-panel span#search_concept').text(concept);
         $('.input-group #search_crit').val(concept);
- //       $('.input-group #search_param').val(param);
     });
 
     $('#resident-list .dropdown-menu').find('a').click(function(e) {
@@ -14,17 +12,21 @@ $(document).ready(function(e){
         $('#resident-list span#resident_selection').text(resident);
     });
     
+    $('#priority-list .dropdown-menu').find('a').click(function(e) {
+        e.preventDefault();
+        var priority = $(this).text();
+        $('#priority-list span#priority_selection').text(priority);
+    });
+    
     $('#HouseList').find('a').click(function(e) {
         e.preventDefault();
- //       var param = $(this).attr("href").replace("#","");
         var concept = $(this).text();
         $('.house-panel span#house_selection').text(concept);
         $('#house_user').val(concept);
- //       $('.input-group #search_param').val(param);
-        });
+      });
 
     $('#fill-shopping').click(function() {
-      $('#fill-wishlist-dialog').show("fast");
+      $.post('fill_wish', { priority : $('#priority_selection').text(), shopping_total : $('#shopping-total').text() });
     });
 
     $('.add_button').click(function() {
@@ -117,18 +119,12 @@ $(document).ready(function(e){
       $('#wish-list-add-dialog').hide();
     });
 
-    $(document.body).on('click', '#fill-wish-confirm' ,function(){
-      $('#fill-wishlist-dialog').hide();
-    });
-    
     $(document.body).on('click', '#list-cancel' ,function(){
       var type = $(this).attr('data-type');
       if (type == "wish")
         $('#wish-list-add-dialog').hide();
       else if (type == "shopping")
         $('.add-list-dialog').hide();
-      else
-        $('#fill-wishlist-dialog').hide();
     });
 
     $(document.body).on('click', '#shop-list-refresh' ,function(){
@@ -225,6 +221,7 @@ $(document).ready(function(e){
     $(document.body).on('click', '.wish-list-add' ,function(){
       var wPrice = $(this).parent().parent().find('.walmart').text();
       var cPrice = $(this).parent().parent().find('.costco').text();
+
       $('#wish-add-walmart-price').text(wPrice);
       $('#wish-add-costco-price').text(cPrice);
       $('.add-list-dialog').show('fast');
@@ -235,7 +232,6 @@ $(document).ready(function(e){
     $(document.body).on('click', '.wish-list-remove' ,function(){
       
       var upc = $(this).parent().parent().attr('data-upc');
-
       var result;
 
       $.ajax({
@@ -260,7 +256,6 @@ $(document).ready(function(e){
     if (resident == "Select Name") {
       $('#vote-error').show('fast');
     } else {
-
       $.ajax({
         url: "/update_wish",
         type: "POST",
@@ -283,8 +278,7 @@ $(document).ready(function(e){
     $('#wish-list-vote-dialog').hide();
   });
 
-   $('#wish-list-vote-cancel').click(function() {
-      $('#wish-list-vote-dialog').hide();
-    });
-
+  $('#wish-list-vote-cancel').click(function() {
+    $('#wish-list-vote-dialog').hide();
+  });
 });

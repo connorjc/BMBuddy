@@ -56,32 +56,4 @@
   <h2>Number of Products: <span id='shopping-count'>{{count}}</h2>
 </div>
 
-<div id="fill-wishlist-dialog" class="modal in" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">Fill from Wish List</h4>
-        </div>
-        <div class="modal-body">
-          <h2>What do you want to prioritize?</h2>
-          <div class="dropdown btn-group">
-            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"><span id="resident_selection">Select Name</span> <span class="caret"></span></button>
-            <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
-              <li><a href="#">Select Priority</a></li>
-              <li><a href="#">Quantity</a></li>
-              <li><a href="#">Votes</a></li>
-					  </ul>
-          </div>
-          <br>
-          <span id="fill-wish-budget-error" class="text-danger" style="display:none">Not enough money left in budget</span>
-          <br>
-          <div class="row col-12-xs text-center">
-            <button id="fill-wish-confirm" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
-            <button id="list-cancel" data-type="fill-wish" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
-          </div>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
-
 {% endblock %}

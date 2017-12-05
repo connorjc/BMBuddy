@@ -69,27 +69,6 @@
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
 
-  <div id="wish-list-manage-dialog" class="modal in" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title">Manage</h4>
-        </div>
-        <div class="modal-body">
-          <ul class="dropdown-menu" id="dropdown_select" name="dropdown_select" role="menu">
-            {% for name in names %}
-            <li><a href="#">{{name}}</a></li>
-            {% endfor %}
-					</ul>
-          <div class="row col-12-xs text-center">
-            <button id="shop-list-add" class="btn btn-success btn-md"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i></button>
-            <button id="shop-list-cancel" class="btn btn-danger btn-md"><i class="glyphicon glyphicon-remove" aria-hidden="true"></i></button>
-          </div>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
-
   <div class="add-list-dialog" data-type="shopping" class="modal in" style="display: none;">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -148,7 +127,5 @@
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
-
-
 
 {% endblock %}

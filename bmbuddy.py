@@ -67,18 +67,59 @@ def shopping_list():
     if 'user_data' in session:
         user = session['user_data']
         cur = db_connect.cursor()
+
+        cur.execute("SELECT `Shopping List` \
+                FROM House \
+                WHERE House.ID = \"" + str(user[4]) + "\"")
+        shopping_id = (cur.fetchone())[0]
+        print(shopping_id) 
         cur.execute("SELECT Store, Name, Quantity, WalmartPrice, CostcoPrice, UPC \
                 FROM `Shopping List`, Item \
-                WHERE ID = (\
-                        SELECT `Shopping List` \
-                        FROM House \
-                        WHERE House.ID = \"" + str(user[4]) + "\" AND UPC = Item)")
+                WHERE ID = " + str(shopping_id) + " AND UPC = Item")
         items = cur.fetchall()
 
-        cur.execute("SELECT COUNT(Item) FROM `Shopping List` WHERE `Shopping List`.ID = (\
-                SELECT `Shopping List` \
-                FROM House \
-                WHERE House.ID = \"" + str(user[4]) + "\")")
+
+        counter = dict()
+        for i in items:
+            if i[5] not in counter: 
+                counter[i[5]] = [0,0,i[1],i[3],i[4]]
+            if i[0] == "Walmart":
+                counter[i[5]][0] += i[2]
+            else:
+                counter[i[5]][1] += i[2]
+        print()
+        print(counter)
+        print()
+        print(items)
+        print()
+        new = []
+        for k in counter:
+            if counter[k][0] > 0:
+                new.append(["Walmart", counter[k][2], counter[k][0], counter[k][3], counter[k][4], k])
+            if counter[k][1] > 0:
+                new.append(["Costco", counter[k][2], counter[k][1], counter[k][3], counter[k][4], k])
+        
+        if len(items) > len(new):
+            cur.execute("DELETE FROM `Shopping List` \
+                WHERE ID = " + str(shopping_id))
+            db_connect.commit()
+
+            for n in new:
+                cur.execute("INSERT INTO `Shopping List` \
+                    (ID, Quantity, Item, Store) \
+                    VALUES ( " + str(shopping_id) + ", " + str(n[2]) + ", \"" + str(n[5]) + "\", \"" + n[0] +"\")")
+        print(items)
+        print()
+
+        items = new
+
+        print(items)
+        print()
+
+        db_connect.commit()
+
+        cur.execute("SELECT COUNT(Item) FROM `Shopping List` WHERE `Shopping List`.ID = " +
+            str(shopping_id))
 
         count = cur.fetchone()
         cur.close()
@@ -146,6 +187,68 @@ def update_shopping():
 
 @app.route('/fill_wish', methods=['POST'])
 def fill_wish():
+    user = session['user_data']
+    cur = db_connect.cursor()
+
+    cur.execute("SELECT `Wish List` \
+                FROM House \
+                WHERE House.ID = \"" + str(user[4]) + "\"")
+    wish_id = (cur.fetchone())[0]
+
+    shopping_total = float(request.form["shopping_total"])
+    cur.execute("CREATE OR REPLACE VIEW import AS " +
+        "SELECT Item.UPC AS UPC, Item.WalmartPrice AS Price " +
+        "FROM `Wish List`, Item " +
+        "WHERE `Wish List`.ID = " + str(wish_id) + " AND \
+        Item.UPC = `Wish List`.UPC AND Item.WalmartPrice IS NOT NULL AND Item.CostcoPrice IS NULL")
+
+    cur.execute("CREATE OR REPLACE VIEW import2 AS \
+        SELECT Item.UPC AS UPC, Item.CostcoPrice AS Price \
+        FROM `Wish List`, Item \
+        WHERE `Wish List`.ID = " + str(wish_id) + " AND \
+        Item.UPC = `Wish List`.UPC AND Item.WalmartPrice IS NULL AND Item.CostcoPrice IS NOT NULL")
+
+    cur.execute("CREATE OR REPLACE VIEW import3 AS \
+        SELECT Item.UPC AS UPC, LEAST(Item.WalmartPrice, Item.CostcoPrice) AS Price \
+        FROM `Wish List`, Item \
+        WHERE `Wish List`.ID = " + str(wish_id) + " AND \
+        Item.UPC = `Wish List`.UPC AND Item.WalmartPrice IS NOT NULL AND Item.CostcoPrice IS NOT NULL")
+        
+    cur.execute("CREATE OR REPLACE VIEW importAll AS \
+        SELECT * FROM import UNION \
+        SELECT * FROM import2 UNION \
+        SELECT * FROM import3 \
+        ORDER BY Price ASC")
+
+    cur.execute("SELECT * FROM importAll")
+    wish_items = cur.fetchall()
+
+    cur.execute("SELECT `Shopping List` \
+        FROM House \
+        WHERE House.ID = \"" + str(user[4]) + "\"")
+    shopping_id = cur.fetchone()
+
+    for items in wish_items:
+        if (shopping_total + items[1]) < user[3]:
+            shopping_total += items[1]
+            cur.execute("SELECT WalmartPrice, CostcoPrice FROM Item WHERE Item.UPC = " + str(items[0]))
+            store = cur.fetchone()
+            if store[0] == items[1]: #Walmart is cheapest
+                store = "Walmart"
+            else:
+                store = "Costco"
+            cur.execute("INSERT INTO `Shopping List` (ID, Quantity, Item, Store) \
+                VALUES (" + str(shopping_id[0]) + ", 1, \"" + str(items[0]) + "\", \"" + store +"\")")
+        else:
+            break
+    cur.execute("DROP VIEW import")
+    cur.execute("DROP VIEW import2")
+    cur.execute("DROP VIEW import3")
+    cur.execute("DROP VIEW importAll")
+
+    db_connect.commit()
+    cur.close()
+
     return str(1) 
 
 @app.route('/add_shopping', methods=['POST'])
