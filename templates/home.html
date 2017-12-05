@@ -1,9 +1,11 @@
 {% extends "layout.html" %}
 
 {% block content %}
+  {% if "Resident" not in name %}
   <div class="alert alert-danger">
     <strong>Reported Allergies</strong>
   </div>
+  {% endif %}
   <div id="search-warning" class="alert alert-danger" hidden>
     <strong>Invalid search parameter</strong>
   </div>
